@@ -1,0 +1,81 @@
+{% extends 'base.html.twig' %}
+
+{% block stylesheets %}
+    <link rel="stylesheet" href="{{ asset('css/bootstrap.min.css') }}" />
+    <link rel="stylesheet" href="{{ asset('css/style.css') }}" />
+    <link rel="stylesheet" href="{{ asset('css/boxicons.min.css') }}" />
+    <link rel="stylesheet" href="{{ asset('css/flaticon.css') }}" />
+
+    <!-- Ajoutez d'autres fichiers CSS ici -->
+{% endblock %}
+
+{% block body %}
+    <section class="page-title-area page-title-bg1">
+    <div class="container">
+        <div class="page-title-content">
+            <h1 title="TOURNAMENT">TOURNAMENT</h1>
+        </div>
+    </div>
+</section>
+
+<section class="popular-leagues-area pt-100 pb-70">
+    <div class="container">
+        <div class="section-title">
+            <span class="sub-title">TOURNAMENTS</span>
+            <h2>Popular Leagues</h2>
+        </div>
+        <div class="section-title">
+            <a href="{{ path('app_tournament_create') }}"><button class="default-btn disabled" style="pointer-events: all; cursor: pointer;">Create a tournament</button></a>
+        </div>
+        {% if tournaments is defined %}
+        {% for tournament in tournaments %}
+        <div class="single-popular-leagues-box">
+            <div class="popular-leagues-box">
+                <div class="popular-leagues-date">
+                    <div class="date">
+                        <div class="d-table">
+                            <div class="d-table-cell">
+                                <span>Begin</span>
+                                <h3>{{ tournament.startDate|date("m/d/Y") }}</h3>
+                                <i class='bx bx-calendar'></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="popular-leagues-content">
+                    <div class="content">
+                        <h3>{{ tournament.nomJeu }}</h3>
+                        <p>{{ tournament.descritpion }}</p>
+                        <ul class="info">
+                            <li><i class="flaticon-game"></i>1v1</li>
+                            <li><i class="flaticon-teamwork"></i>{{ tournament.maxParticipant }} player</li>
+                        </ul>
+                        <h1 align="center">
+                            {% if tournament.status == "cancel" %}
+                                <a href="{{ path('app_manage_tournaments_uncancel', {'id': tournament.id }) }}"><button class="default-btn disabled" style="pointer-events: all; cursor: pointer;">UnCancel Tournament</button></a>
+                            {% else %}
+                                <a href="{{ path('app_manage_tournaments_cancel', {'id': tournament.id }) }}"><button class="default-btn disabled" style="pointer-events: all; cursor: pointer;">Cancel Tournament</button></a>
+                                <a href="{{ path('app_manage_tournaments_modify',{'id': tournament.id }) }}"><button class="default-btn disabled" style="pointer-events: all; cursor: pointer;">Modify Tournament</button></a>
+                            {% endif %}
+                        </h1>
+                    </div>
+                </div>
+
+                <div class="popular-leagues-date">
+                    <div class="date">
+                        <div class="d-table">
+                            <div class="d-table-cell">
+                                <p>End</p>
+                                <h3>{{ tournament.endDate|date("d/m/Y") }}</h3>
+                                <i class='bx bx-calendar'></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+        {% endif %}
+    </div>
+</section>
+{% endblock %}

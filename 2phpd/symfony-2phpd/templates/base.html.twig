@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+
+    <!-- Inclusion des fichiers CSS avec la syntaxe Twig -->
+    {% block stylesheets %}
+        <link rel="stylesheet" href="{{ asset('css/animate.min.css') }}" />
+        <link rel="stylesheet" href="{{ asset('css/style.css') }}" />
+        <link rel="stylesheet" href="{{ asset('css/boostrap.min.css') }}" />
+        <link rel="stylesheet" href="{{ asset('css/fancybox.min.css') }}" />
+        <link rel="stylesheet" href="{{ asset('css/magnific-popup.min.css') }}" />
+        <link rel="stylesheet" href="{{ asset('css/flaticon.css') }}" />
+        <link rel="stylesheet" href="{{ asset('css/meanmenu.min.css') }}" />
+        <link rel="stylesheet" href="{{ asset('css/owl.carousel.min.css') }}" />
+        <link rel="stylesheet" href="{{ asset('css/owl.theme.default.min.css') }}" />
+        <link rel="stylesheet" href="{{ asset('css/boxicons.min.css') }}" />
+        <script src="{{ asset('js/ajaxchimp.min.js')}}"></script>
+        <script src="{{ asset('js/boostrap.bundle.min.js')}}"></script>
+        <script src="{{ asset('js/fancybox.min.js')}}"></script>
+        <script src="{{ asset('js/form-validator.min.js')}}"></script>
+        <script src="{{ asset('js/isotope.pkgd.min.js')}}"></script>
+        <script src="{{ asset('js/jquery.min.js')}}"></script>
+        <script src="{{ asset('js/magnific-popup.min.js')}}"></script>
+        <script src="{{ asset('js/main.js')}}"></script>
+        <script src="{{ asset('js/meanmenu.min.js')}}"></script>
+        <script src="{{ asset('js/owl.carousel.min.js')}}"></script>
+        <script src="{{ asset('js/parallax.min.js')}}"></script>
+        <script src="{{ asset('js/wow.min.js')}}"></script>
+        <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+        <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+
+        <!-- Ajoutez d'autres fichiers CSS ici -->
+    {% endblock %}
+</head>
+<body>
+{% block header %}
+    <div class="navbar-area">
+        <div class="zelda-responsive-nav">
+            <div class="container">
+                <div class="zelda-responsive-menu">
+                    <div class="logo">
+                        <a href="index.html">
+                            <img src="assets/img/logo.png" alt="logo">
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="zelda-nav">
+            <div class="container-fluid">
+                <nav class="navbar navbar-expand-md navbar-light">
+                    <a class="navbar-brand" href="index.html">
+                        <img src="assets/img/logo.png" alt="logo">
+                    </a>
+
+                    <div class="collapse navbar-collapse mean-menu">
+                        <ul class="navbar-nav">
+                            {% if app.session.get('status') == "actif" %}
+                                <li class="nav-item"><a href="{{ path('app_player') }}" class="nav-link active">Home</a></li>
+                                <li class="nav-item"><a href="{{ path('app_tournament') }}" class="nav-link active">Tournaments</a></li>
+                                <li class="nav-item"><a href="{{ path('app_registration', {'tri': 'all'}) }}" class="nav-link active">My Registrations</a></li>
+                            {% endif %}
+                            {% if app.session.get('status') == "admin" %}
+                                <li class="nav-item"><a href="{{ path('app_manage_players') }}" class="nav-link active">Manage Players</a></li>
+                                <li class="nav-item"><a href="{{ path('app_manage_tournaments') }}" class="nav-link active">Manage Tournaments</a></li>
+                                <li class="nav-item"><a href="{{ path('app_manage_registrations') }}" class="nav-link active">Manage Register</a></li>
+                                <li class="nav-item"><a href="{{ path('app_manage_matchs')}}" class="nav-link active">Manage Match</a></li>
+                            {% endif %}
+                        </ul>
+
+                        <div class="others-option d-flex align-items-center">
+                            {% if app.session.get('id') is not null %}
+                                <div class="option-item">
+                                    <a href="{{ path('app_player_logout') }}"><button class="default-btn disabled" style="pointer-events: all; cursor: pointer;">Logout</button></a>
+                                </div>
+                            {% else %}
+                                <div class="option-item">
+                                   <a href="{{ path('app_player_register') }}"><button  class="default-btn disabled" style="pointer-events: all; cursor: pointer;">Sign up</button></a>
+                                </div>
+                                <div class="option-item">
+                                    <a href="{{ path('app_player_login') }}"><button class="default-btn disabled" style="pointer-events: all; cursor: pointer;">Sign in</button></a>
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="dark-version-btn">
+                            <label id="switch" class="switch">
+                                <input type="checkbox" onchange="toggleTheme()" id="slider">
+                                <span class="slider round"></span>
+                            </label>
+                        </div>
+                    </div>
+                </nav>
+            </div>
+        </div>
+
+        <div class="others-option-for-responsive">
+            <div class="container">
+                <div class="dot-menu">
+                    <div class="inner">
+                        <div class="circle circle-one"></div>
+                        <div class="circle circle-two"></div>
+                        <div class="circle circle-three"></div>
+                    </div>
+                </div>
+
+                <div class="container">
+                    <div class="option-inner">
+                        <div class="others-option">
+                            <div class="option-item">
+                                <div class="search-box">
+                                    <i class="flaticon-search-1"></i>
+                                </div>
+                            </div>
+
+                            <div class="option-item">
+                                <div class="side-menu-btn">
+                                    <i class="flaticon-null-2" data-bs-toggle="modal" data-bs-target="#sidebarModal"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block body %}{% endblock %}
+</body>
+</html>

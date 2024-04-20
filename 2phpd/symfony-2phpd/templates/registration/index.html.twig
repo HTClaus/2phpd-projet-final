@@ -1,0 +1,90 @@
+{% extends 'base.html.twig' %}
+
+{% block stylesheets %}
+    <link rel="stylesheet" href="{{ asset('css/bootstrap.min.css') }}" />
+    <link rel="stylesheet" href="{{ asset('css/style.css') }}" />
+    <link rel="stylesheet" href="{{ asset('css/boxicons.min.css') }}" />
+    <link rel="stylesheet" href="{{ asset('css/flaticon.css') }}" />
+
+    <!-- Ajoutez d'autres fichiers CSS ici -->
+{% endblock %}
+
+{% block body %}
+    <section class="page-title-area page-title-bg1">
+        <div class="container">
+            <div class="page-title-content">
+                <h1 title="TOURNAMENT">TOURNAMENT</h1>
+            </div>
+        </div>
+    </section>
+
+    <section class="popular-leagues-area pt-100 pb-70">
+        <div class="container">
+            <div class="section-title">
+                <span class="sub-title">TOURNAMENTS</span>
+                <h2>Popular Leagues</h2>
+            </div>
+            <div class="section-title">
+                <a href="{{ path('app_registration', {'tri': 'all'}) }}"><button class="default-btn disabled" style="pointer-events: all; cursor: pointer;">ALL</button></a>
+                <a href="{{ path('app_registration', {'tri': 'upcoming'}) }}"><button class="default-btn disabled" style="pointer-events: all; cursor: pointer;">UPCOMING</button></a>
+                <a href="{{ path('app_registration', {'tri': 'start'}) }}"><button class="default-btn disabled" style="pointer-events: all; cursor: pointer;">START</button></a>
+            </div>
+            {% if lesRegistrations is defined %}
+                {% for registration in lesRegistrations %}
+                    <div class="single-popular-leagues-box">
+                        <div class="popular-leagues-box">
+                            <div class="popular-leagues-date">
+                                <div class="date">
+                                    <div class="d-table">
+                                        <div class="d-table-cell">
+                                            <span>Begin</span>
+                                            <h3>{{ registration.tournament.startDate|date("m/d/Y") }}</h3>
+                                            <i class='bx bx-calendar'></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="popular-leagues-content">
+                                <div class="content">
+                                    <h3>{{ registration.tournament.nomJeu }}</h3>
+                                    <p>{{ registration.tournament.descritpion }}</p>
+                                    <ul class="info">
+                                        <li><i class="flaticon-game"></i>1v1</li>
+                                        <li><i class="flaticon-teamwork"></i>{{ registration.tournament.maxParticipant }} player</li>
+                                        <li></li>
+                                        <li></li>
+                                        <li><i class="flaticon-teamwork"></i>{{ registration.status }} </li>
+                                    </ul>
+                                    {% if registration.tournament.status == "start" and registration.status =="confirmer" and registration.status !="Perdu" and registration.status !="refuser"%}
+                                        <a href="participate/{{ registration.tournament.id }}" class="join-now-btn">Participate</a>
+                                    {% endif %}
+                                    {% if registration.tournament.status == "start" and registration.status !="confirmer" and registration.status !="refuser" and registration.status !="en attente" and registration.status !="Perdu"%}
+                                        <a href="participate/{{ registration.tournament.id }}" class="join-now-btn">See Match</a>
+                                    {% endif %}
+                                    {% if registration.tournament.status == "finish" or registration.status == "Perdu" %}
+                                        <a href="leave/{{ registration.id }}" class="join-now-btn">Look result</a>
+                                    {% endif %}
+                                    {% if registration.tournament.status == "en attente" and registration.status == "en attente"%}
+                                        <a href="leave/{{ registration.id }}" class="join-now-btn">Leave the tournament</a>
+                                    {% endif %}
+                                </div>
+                            </div>
+
+                            <div class="popular-leagues-date">
+                                <div class="date">
+                                    <div class="d-table">
+                                        <div class="d-table-cell">
+                                            <p>End</p>
+                                            <h3>{{ registration.tournament.endDate|date("m/d/Y") }}</h3>
+                                            <i class='bx bx-calendar'></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        </div>
+    </section>
+{% endblock %}

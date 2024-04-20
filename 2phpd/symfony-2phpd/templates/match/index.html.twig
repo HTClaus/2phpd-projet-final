@@ -1,0 +1,225 @@
+{% extends 'base.html.twig' %}
+
+{% block stylesheets %}
+    <link rel="stylesheet" href="{{ asset('css/bootstrap.min.css') }}" />
+    <link rel="stylesheet" href="{{ asset('css/style.css') }}" />
+    <link rel="stylesheet" href="{{ asset('css/boxicons.min.css') }}" />
+    <link rel="stylesheet" href="{{ asset('css/flaticon.css') }}" />
+
+    <!-- Ajoutez d'autres fichiers CSS ici -->
+{% endblock %}
+
+{% block body %}
+    <section class="page-title-area page-title-bg1">
+        <div class="container">
+            <div class="page-title-content">
+                <h1 title="Matchs">Match</h1>
+            </div>
+        </div>
+    </section>
+    <section class="tournament-details-area ptb-100">
+        <div class="container">
+            <div class="tournament-details-desc">
+                <span class="sub-title">25TH AUGUST 2024 / 15:00 / MADRID</span>
+                <h3>About the tournament</h3>
+                <p>Aliquam lorem ante, dapibus in, viverra quis, feugiat a, tellus. Phasellus viverra nulla ut metus varius laoreet. Quisque rutrum. Aenean imperdiet. Etiam ultricies nisi vel augue. Curabitur ullamcorper ultricies nisi. Nam eget dui. Etiam rhoncus. Maecenas tempus, tellus eget.</p>
+
+                <ul class="tournament-meta">
+                    <li>
+                        <div class="icon">
+                            <i class="flaticon-coin"></i>
+                        </div>
+                        <span>100k</span>
+                        Prize Pool
+                    </li>
+
+                    <li>
+                        <div class="icon">
+                            <i class="flaticon-game"></i>
+                        </div>
+                        <span>1v1</span>
+                        Play Mood
+                    </li>
+
+                    <li>
+                        <div class="icon">
+                            <i class="flaticon-game-1"></i>
+                        </div>
+                        <span>Mobile</span>
+                        Platform
+                    </li>
+
+                    <li>
+                        <div class="icon">
+                            <i class="flaticon-teamwork"></i>
+                        </div>
+                        <span>10 Groups</span>
+                        Players
+                    </li>
+                </ul>
+            </div>
+            <div class="matches-tabs">
+                <ul class="nav nav-tabs" id="myTab" role="tablist">
+                    <li class="nav-item" role="presentation"><a class="nav-link active" id="all-matches-tab" data-bs-toggle="tab" href="#all-matches" role="tab" aria-controls="all-matches" aria-selected="true">All Matches</a></li>
+
+                    <li class="nav-item" role="presentation"><a class="nav-link" id="upcoming-matches-tab" data-bs-toggle="tab" href="#upcoming-matches" role="tab" aria-controls="upcoming-matches" aria-selected="false" tabindex="-1">Upcoming Matches</a></li>
+
+                    <li class="nav-item" role="presentation"><a class="nav-link" id="latest-result-tab" data-bs-toggle="tab" href="#latest-result" role="tab" aria-controls="latest-result" aria-selected="false" tabindex="-1">Latest Result</a></li>
+                </ul>
+                {% if matchs is defined %}
+                {% for match in matchs %}
+                {% if match.status == "non complet" %}
+                <div class="tab-content" id="myTabContent">
+                    <div class="tab-pane fade active show" id="all-matches" role="tabpanel" aria-labelledby="all-matches-tab">
+                        <div class="single-matches-box">
+                            <div class="row align-items-center">
+                                <div class="col-lg-5 col-md-12">
+                                    <div class="matches-team">
+
+
+                                        <div class="content">
+                                            <h3>{{match.player1.username}}</h3>
+                                            <ul class="watch-list">
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="col-lg-2 col-md-12">
+                                    <div class="matches-result">
+                                        <ul>
+                                            <li>0</li>
+                                            <li>0</li>
+                                        </ul>
+                                        <span class="date-time">{{match.matchDate|date("d/m/Y")}}</span>
+                                    </div>
+                                </div>
+
+                                <div class="col-lg-5 col-md-12">
+                                    <div class="matches-team right-image">
+                                        <div class="content">
+                                            <h3>?</h3>
+                                            <ul class="watch-list">
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+                {% if match.status == "complet" %}
+                    <div class="tab-content" id="myTabContent">
+                        <div class="tab-pane fade active show" id="all-matches" role="tabpanel" aria-labelledby="all-matches-tab">
+                            <div class="single-matches-box">
+                                <div class="row align-items-center">
+                                    <div class="col-lg-5 col-md-12">
+                                        <div class="matches-team">
+
+
+                                            <div class="content">
+                                                <h3>{{match.player1.username }}</h3>
+                                                <ul class="watch-list">
+                                                </ul>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-lg-2 col-md-12">
+                                        <div class="matches-result">
+                                            <ul>{% if form is defined %}
+                                                    {{ form_start(form) }}
+                                                    {% if app.session.get('username') == match.player1.username and match.scorePlayer1 == 0 %}
+                                                    <li>{{ form_widget(form.scorePlayer, {'attr': {'type': 'number','class':'form-control'} }) }}</li>
+                                                    {% else %}
+                                                        <li>{{ match.scorePlayer1 }}</li>
+                                                    {% endif %}
+                                                    {% if app.session.get('username') == match.player2.username and match.scorePlayer2 == 0  %}
+                                                        <li>{{ form_widget(form.scorePlayer, {'attr': {'type': 'number','class':'form-control'} }) }}</li>
+                                                    {% else %}
+                                                        <li>{{ match.scorePlayer2 }}</li>
+                                                    {% endif %}
+                                                    {% else %}
+                                                        {% if match.scorePlayer1 != 0 %}
+                                                        <li>{{ match.scorePlayer1 }}</li>
+                                                            {% else %}
+                                                                <li>?</li>
+                                                        {% endif %}
+                                                        {% if match.scorePlayer2 != 0 %}
+                                                            <li>{{ match.scorePlayer2 }}</li>
+                                                        {% else %}
+                                                            <li>?</li>
+                                                        {% endif %}
+                                                {% endif %}
+                                            </ul>
+                                            <span class="date-time">{{match.matchDate|date("d/m/Y")}}</span>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-lg-5 col-md-12">
+                                        <div class="matches-team right-image">
+                                            <div class="content">
+                                                <h3>{{ match.player2.username }}</h3>
+                                                <ul class="watch-list">
+                                                </ul>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% if form is defined %}
+                    {{ form_widget(form.Valider, {'attr': {'type': 'submit'}}) }}
+                    {{ form_end(form) }}
+                        {% endif %}
+
+                {% endif %}
+                {% if match.status == "terminer"%}
+                    <div class="tab-content" id="myTabContent">
+                        <div class="tab-pane fade active show" id="all-matches" role="tabpanel" aria-labelledby="all-matches-tab">
+                            <div class="single-matches-box">
+                                <div class="row align-items-center">
+                                    <div class="col-lg-5 col-md-12">
+                                        <div class="matches-team">
+
+
+                                            <div class="content">
+                                                <h3>{{match.player1.username}}</h3>
+                                                <ul class="watch-list">
+                                                </ul>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-lg-2 col-md-12">
+                                        <div class="matches-result">
+                                            <ul>
+                                                <li>{{ match.scorePlayer1 }}</li>
+                                                <li>{{ match.scorePlayer2 }}</li>
+                                            </ul>
+                                            <span class="date-time">{{match.matchDate|date("d/m/Y")}}</span>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-lg-5 col-md-12">
+                                        <div class="matches-team right-image">
+                                            <div class="content">
+                                                <h3>{{ match.player2.username }}</h3>
+                                                <ul class="watch-list">
+                                                </ul>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                {% endif %}
+                {% endfor %}
+                {% endif %}
+            </div>
+        </div>
+    </section>
+{% endblock %}

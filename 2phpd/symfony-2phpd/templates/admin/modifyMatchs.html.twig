@@ -1,0 +1,72 @@
+{% extends 'base.html.twig' %}
+
+{% block stylesheets %}
+    <link rel="stylesheet" href="{{ asset('css/bootstrap.min.css') }}" />
+    <link rel="stylesheet" href="{{ asset('css/style.css') }}" />
+    <link rel="stylesheet" href="{{ asset('css/boxicons.min.css') }}" />
+    <link rel="stylesheet" href="{{ asset('css/flaticon.css') }}" />
+
+    <!-- Ajoutez d'autres fichiers CSS ici -->
+{% endblock %}
+
+{% block body %}
+    <section class="page-title-area page-title-bg1">
+        <div class="container">
+            <div class="page-title-content">
+                <h1 title="Manage Matchs">Manage Matchs</h1>
+            </div>
+        </div>
+    </section>
+    <section class="tournament-details-area ptb-100">
+        <div class="container">
+            <div class="matches-tabs">
+                {% if match is defined %}
+                    <div class="tab-content" id="myTabContent">
+                        <div class="tab-pane fade active show" id="all-matches" role="tabpanel" aria-labelledby="all-matches-tab">
+                            <div class="single-matches-box" >
+                                <div class="row align-items-center">
+                                    <div class="col-lg-5 col-md-12">
+                                        <div class="matches-team right-image">
+                                            <div class="content">
+                                                <h3>{{match.player1.username }}</h3>
+                                                <ul class="watch-list">
+                                                </ul>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    {{ form_start(form) }}
+                                    <div class="col-lg-2 col-md-12">
+                                        <div class="matches-result">
+                                            <ul>
+                                                <li>{{ form_widget(form.scorePlayer1, {'attr': {'type': 'number','class':'form-control','value':match.scoreplayer1} }) }}</li>
+                                            </ul>
+                                            <ul>
+                                                    <li> : </li>
+
+                                            </ul>
+                                            <ul>
+                                                <li>{{ form_widget(form.scorePlayer2, {'attr': {'type': 'number','class':'form-control','value':match.scoreplayer2} }) }}</li>
+                                            </ul>
+                                            <span class="date-time">{{match.matchDate|date("d/m/Y")}}</span>
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-5 col-md-12">
+                                        <div class="matches-team right-image">
+                                            <div class="content">
+                                                <h3>{{ match.player2.username }}</h3>
+                                                <ul class="watch-list">
+                                                </ul>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <h1 align="center">{{ form_widget(form.Valider, {'attr': {'type': 'submit','class':'default-btn disabled','style':'pointer-event: all; cursor: pointer;'}}) }}</h1>
+                    {{ form_end(form) }}
+                {% endif %}
+            </div>
+        </div>
+    </section>
+{% endblock %}

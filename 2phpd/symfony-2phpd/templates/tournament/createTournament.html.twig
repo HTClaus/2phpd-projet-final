@@ -1,0 +1,81 @@
+{% extends 'base.html.twig' %}
+
+{% block stylesheets %}
+    <link rel="stylesheet" href="{{ asset('css/bootstrap.min.css') }}" />
+    <link rel="stylesheet" href="{{ asset('css/style.css') }}" />
+    <link rel="stylesheet" href="{{ asset('css/boxicons.min.css') }}" />
+
+    <!-- Ajoutez d'autres fichiers CSS ici -->
+{% endblock %}
+
+{% block body %}
+    <section class="page-title-area page-title-bg1">
+        <div class="container">
+            <div class="page-title-content">
+                <h1 title="CREATE TOURNAMENT">CREATE TOURNAMENT</h1>
+            </div>
+        </div>
+    </section>
+
+<section class="checkout-area ptb-100">
+    <div class="container">
+        {{ form_start(form) }}
+        <form>
+            <div class="row justify-content-center">
+                <div class="col-lg-6 col-md-12">
+                    <div class="billing-details">
+                        <h3 class="title">Create your tournament</h3>
+                        <div class="row">
+                            <div class="col-lg-12 col-md-12">
+                                <div class="form-group">
+                                    <label>Name of Tournament <span class="required">*</span></label>
+                                    {{ form_widget(form.tournamentName, {'attr': {'type': 'text','class':'form-control'} }) }}
+                                </div>
+                            </div>
+
+                            <div class="col-lg-6 col-md-6">
+                                <div class="form-group">
+                                    <label>Game Name <span class="required">*</span></label>
+                                    {{ form_widget(form.nomJeu, {'attr': {'type': 'text','class':'form-control'} }) }}</div>
+                            </div>
+
+                            <div class="col-lg-12 col-md-12">
+                                <div class="form-group">
+                                    <label>Description</label>
+                                    {{ form_widget(form.descritpion, {'attr': {'type': 'text','class':'form-control'} }) }}
+                                </div>
+                            </div>
+                            <div class="col-lg-6 col-md-6">
+                                <div class="form-group">
+                                    <label>Start Date</label>
+                                    {{ form_widget(form.startDate, {'attr': {'type': 'text','class':'form-control'} }) }}
+                                </div>
+                            </div>
+                            <div class="col-lg-6 col-md-6">
+                                <div class="form-group">
+                                    <label>End Date</label>
+                                    {{ form_widget(form.endDate, {'attr': {'type': 'date','class':'form-control'} }) }}
+                                </div>
+                            </div>
+                            <div class="col-lg-12 col-md-12">
+                                <div class="form-group">
+                                    <label>Location</label>
+                                    {{ form_widget(form.location, {'attr': {'type': 'date','class':'form-control'} }) }}
+                                </div>
+                            </div>
+                            <div class="col-lg-12 col-md-12">
+                                <div class="form-group">
+                                    <label>Max Player</label>
+                                    {{ form_widget(form.maxParticipant, {'attr': {'type': 'number','class':'form-control'} }) }}
+                                </div>
+                            </div>
+                            {{ form_widget(form.Create, {'attr': {'type': 'submit'}}) }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </form>
+        {{ form_end(form) }}
+    </div>
+</section>
+{% endblock %}
