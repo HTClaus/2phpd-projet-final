@@ -11,6 +11,8 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\HttpFoundation\JsonResponse;
+
 
 class TournamentController extends AbstractController
 {
@@ -37,7 +39,7 @@ class TournamentController extends AbstractController
 
         return null;
     }
-    #[Route('/tournament', name: 'app_tournament')]
+    #[Route('/tournament', name: 'app_tournament' , methods:['GET'])]
     public function index(ManagerRegistry $doctrine,SessionInterface $session): Response
     {
         $response = $this->userAcces($session);
@@ -50,7 +52,8 @@ class TournamentController extends AbstractController
             'lesTournaments' => $lestournaments
         ]);
     }
-    #[Route('/tournament/create', name: 'app_tournament_create')]
+    
+    #[Route('/tournament/create', name: 'app_tournament_create', methods:['POST'])]
     public function createTournament(Request $request, ManagerRegistry $doctrine, SessionInterface $session): Response
     {
         $response = $this->userAcces($session);
@@ -77,4 +80,61 @@ class TournamentController extends AbstractController
             'form' => $form->createView(),
         ]);
     }
+    #[Route('/tournament/{id}', name: 'app_tournament_show', methods:['GET'])]
+    public function showTournament($id, ManagerRegistry $doctrine, SessionInterface $session): Response
+    {
+        $response = $this->userAcces($session);
+        if ($response !== null) {
+            return $response;
+        }
+        $tournament = $doctrine->getRepository(Tournament::class)->find($id);
+        return $this->render('tournament/showTournament.html.twig', [
+            'tournament' => $tournament
+        ]);
+    }
+    #[Route('/tournament/{id}/delete', name: 'app_tournament_delete', methods:['DELETE'])]
+    public function deleteTournament($id, ManagerRegistry $doctrine, SessionInterface $session): Response
+    {
+        $response = $this->userAcces($session);
+        if ($response !== null) {
+            return $response;
+        }
+        $tournament = $doctrine->getRepository(Tournament::class)->find($id);
+        $entityManager = $doctrine->getManager();
+        $entityManager->remove($tournament);
+        $entityManager->flush();
+        return $this->redirectToRoute('app_tournament');
+    }
+    #[Route('/tournament/{id}/update', name: 'app_tournament_update', methods:['PUT'])]
+    public function updateTournament($id, Request $request, ManagerRegistry $doctrine, SessionInterface $session): Response
+    {
+        $response = $this->userAcces($session);
+        if ($response !== null) {
+            return $response;
+        }
+        $tournament = $doctrine->getRepository(Tournament::class)->find($id);
+        $form = $this->createForm(TournamentCreateFormType::class, $tournament);
+        $form->handleRequest($request);
+        if ($form->isSubmitted() && $form->isValid()) {
+            // Update tournament data
+            $tournament->setName($form->get('nomjeu')->getData());
+            $tournament->setStartDate($form->get('startdate')->getData());
+            $tournament->setEndDate($form->get('enddate')->getData());
+            $tournament->setLocation($form->get('location')->getData());
+            $tournament->setDescription($form->get('description')->getData());
+            $tournament->setMaxParticipants($form->get('maxParticipants')->getData());
+            $tournament->setStatus($form->get('status')->getData());
+            $tournament->setOrganizer($form->get('organizer')->getData());
+            $tournament->setWinner($form->get('winner')->getData());
+            
+
+            $entityManager = $doctrine->getManager();
+            $entityManager->persist($tournament);
+            $entityManager->flush();
+            return $this->redirectToRoute('app_tournament_show', ['id' => $tournament->getId()]);
+        }
+    
+        return $this->render('tournament/updateTournament.html.twig', [
+            'form' => $form->createView(),
+        ]);}
 }

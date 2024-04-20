@@ -86,7 +86,7 @@ class RegistrationController extends AbstractController
         }
         return $this->redirectToRoute('app_tournament');
     }
-    #[Route('/registration/participate/{id}', name: 'app_participate_tournament')]
+    #[Route('/registration/participate/{id}', name: 'app_participate_tournament', methods:['GET'])]
     public function participateTournament($id, ManagerRegistry $doctrine, SessionInterface $session): Response
     {
         $response = $this->userAcces($session);
@@ -126,5 +126,24 @@ class RegistrationController extends AbstractController
             }
         }
         return $this->redirectToRoute("app_match", ['id' => $idTournament]);
+    }
+    #[Route('/registration/unregister/{id}', name: 'app_unregister_tournament', methods:['GET', 'DELETE'])]
+    public function unregisterTournament($id, ManagerRegistry $doctrine, SessionInterface $session): Response
+    {
+        $response = $this->userAcces($session);
+        if ($response !== null) {
+            return $response;
+        }
+        $entityManager = $doctrine->getManager();
+        $user = $doctrine->getManager()->getRepository(User::class)->findOneBy(['id' => $session->get('id')]);
+        $tournament = $doctrine->getManager()->getRepository(Tournament::class)->findOneBy(['id' => $id]);
+        $registration = $doctrine->getManager()->getRepository(Registration::class)->findOneBy(['tournament' => $tournament, 'player' => $user]);
+        
+        if ($registration) {
+            $entityManager->remove($registration);
+            $entityManager->flush();
+        }
+        
+        return $this->redirectToRoute('app_tournament');
     }
 }

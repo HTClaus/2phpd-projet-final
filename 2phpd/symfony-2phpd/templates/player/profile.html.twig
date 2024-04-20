@@ -1,0 +1,12 @@
+{% extends 'base.html.twig' %}
+
+{% block content %}
+    <h1>Player Profile</h1>
+    <div>
+        <h2>{{ player.name }}</h2>
+        <p>Age: {{ player.age }}</p>
+        <p>Position: {{ player.position }}</p>
+        <p>Team: {{ player.team }}</p>
+        <p>Country: {{ player.country }}</p>
+    </div>
+{% endblock %}

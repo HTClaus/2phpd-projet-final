@@ -1,0 +1,36 @@
+{% extends 'base.html.twig' %}
+
+{% block body %}
+    <h1>Mise à jour du profil du joueur</h1>
+
+    <form id="updatePlayerForm">
+        <label for="playerId">ID du joueur :</label>
+        <input type="text" id="playerId" name="playerId" required>
+
+        <label for="playerData">Données du joueur :</label>
+        <textarea id="playerData" name="playerData" required></textarea>
+
+        <button type="submit">Mettre à jour</button>
+    </form>
+
+    <script>
+        document.getElementById('updatePlayerForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+
+            var playerId = document.getElementById('playerId').value;
+            var playerData = document.getElementById('playerData').value;
+
+            var xhr = new XMLHttpRequest();
+            xhr.open('PUT', '/api/players/' + playerId);
+            xhr.setRequestHeader('Content-Type', 'application/json');
+            xhr.onload = function() {
+                if (xhr.status === 200) {
+                    alert('Mise à jour réussie');
+                } else {
+                    alert('Erreur lors de la mise à jour');
+                }
+            };
+            xhr.send(playerData);
+        });
+    </script>
+{% endblock %}
