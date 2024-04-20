@@ -16,7 +16,7 @@ Avant de commencer, assurez-vous d'avoir installé les éléments suivants sur v
 
 ### 1. Clonez ce dépôt sur votre machine locale :
 
-  git clone https://github.com/votre-utilisateur/Projet-Tournois-JV.git
+  git clone https://github.com/HTClaus/2phpd-projet-final.git
 
 ### 2. Accédez au répertoire du projet :
    
