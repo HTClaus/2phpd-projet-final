@@ -13,6 +13,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\HttpFoundation\JsonResponse;
 
 class RegistrationController extends AbstractController
 {
@@ -126,6 +127,37 @@ class RegistrationController extends AbstractController
             }
         }
         return $this->redirectToRoute("app_match", ['id' => $idTournament]);
+    }
+    #[Route('/registrations/specific_tournament', name: 'api_register_tournament', methods: ['POST'])]
+    public function apiRegisterTournament(Request $request, ManagerRegistry $doctrine): Response
+    {
+        $data = json_decode($request->getContent(), true);
+
+        if (!isset($data['playerId']) || !isset($data['tournamentId'])) {
+            return new JsonResponse(['error' => 'Player ID or Tournament ID is missing in the request body'], Response::HTTP_BAD_REQUEST);
+        }
+
+        $playerId = $data['playerId'];
+        $tournamentId = $data['tournamentId'];
+
+        $entityManager = $doctrine->getManager();
+        $tournament = $entityManager->getRepository(Tournament::class)->find($tournamentId);
+        $player = $entityManager->getRepository(User::class)->find($playerId);
+
+        if (!$tournament || !$player) {
+            return new JsonResponse(['error' => 'Invalid tournament or player'], Response::HTTP_BAD_REQUEST);
+        }
+
+        $registration = new Registration();
+        $registration->setRegistrationDate(new \DateTime());
+        $registration->setStatus("en attente");
+        $registration->setPlayer($player);
+        $registration->setTournament($tournament);
+
+        $entityManager->persist($registration);
+        $entityManager->flush();
+
+        return new JsonResponse(['message' => 'Player registered successfully'], Response::HTTP_OK);
     }
     #[Route('/registration/unregister/{id}', name: 'app_unregister_tournament', methods:['GET', 'DELETE'])]
     public function unregisterTournament($id, ManagerRegistry $doctrine, SessionInterface $session): Response

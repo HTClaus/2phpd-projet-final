@@ -16,6 +16,7 @@ use Doctrine\Persistence\ManagerRegistry;
 use Symfony\Component\Form\Form;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
+use Symfony\Component\HttpFoundation\JsonResponse;
 
 
 class PlayerController extends AbstractController
@@ -35,39 +36,54 @@ class PlayerController extends AbstractController
         ]);
     }
 
-    #[Route('/register', name: 'app_player_register', methods:['POST'])]
-    public function registerPlayer(Request $request,ManagerRegistry $doctrine,SessionInterface $session): ?Response
+    #[Route('/register', name: 'app_player_register', methods: ['POST'])]
+    public function registerPlayer(Request $request, ManagerRegistry $doctrine, SessionInterface $session): Response
     {
         $user = new User();
-        $form = $this->createForm(UserRegistrationFormType::class,$user);
+        $form = $this->createForm(UserRegistrationFormType::class, $user);
         $form->handleRequest($request);
+        
         if ($form->isSubmitted() && $form->isValid()) {
             $data = $form->getData();
             $userRepository = $doctrine->getManager()->getRepository(User::class);
+            $userFirstName = $userRepository->findOneBy(['firstName' => $data->getFirstName()]);
+            $userLastName = $userRepository->findOneBy(['lastName' => $data->getLastName()]);
+            $userPassword = $userRepository->findOneBy(['password' => md5($data->getPassword() . '15')]);
+
+            if ($userPassword) {
+                $message = "Ce mot de passe est déjà utilisé !";
+                return new JsonResponse(['message' => $message], Response::HTTP_BAD_REQUEST);
+            }
+            if ($userFirstName) {
+                $message = "Ce prénom est déjà utilisé !";
+                return new JsonResponse(['message' => $message], Response::HTTP_BAD_REQUEST);
+            } elseif ($userLastName) {
+                $message = "Ce nom de famille est déjà utilisé !";
+                return new JsonResponse(['message' => $message], Response::HTTP_BAD_REQUEST);
+            }
             $userAddress = $userRepository->findOneBy(['emailAddress' => $data->getEmailAddress()]);
             $userUsername = $userRepository->findOneBy(['username' => $data->getUsername()]);
-           if ($userAddress){
-                $message="This email address is already use !";
-            }
-            elseif ($userUsername){
-                $message="This username is already use !";
-            }
-            else{
+            
+            if ($userAddress) {
+                $message = "Cette adresse e-mail est déjà utilisée !";
+                return new JsonResponse(['message' => $message], Response::HTTP_BAD_REQUEST);
+            } elseif ($userUsername) {
+                $message = "Ce nom d'utilisateur est déjà utilisé !";
+                return new JsonResponse(['message' => $message], Response::HTTP_BAD_REQUEST);
+            } else {
                 $entityManager = $doctrine->getManager();
-                $user->setPassword((MD5($user->getPassword().'15')));
+                $user->setPassword(md5($user->getPassword() . '15')); // Avoid using MD5 for password hashing in production
                 $user->setStatus("actif");
                 $entityManager->persist($user);
                 $entityManager->flush();
-                return $this->redirectToRoute('app_player_login');
+                return new JsonResponse(['message' => 'Utilisateur enregistré avec succès'], Response::HTTP_CREATED);
             }
-            return $this->render('player/registerPlayer.html.twig', [
-                'form' => $form->createView(),
-                'message' => $message
-            ]);
         }
+
         return $this->render('player/registerPlayer.html.twig', [
             'form' => $form->createView(),
         ]);
+
     }
     #[Route('/profile', name: 'app_player_profile', methods:['GET'])]
     public function profile(SessionInterface $session): Response
@@ -79,37 +95,46 @@ class PlayerController extends AbstractController
             'status' => $session->get('status'),
         ]);
     }
-    #[Route('/profile/update', name: 'app_player_profile_update', methods:['PUT'])]
+    
+    #[Route('/profile/update', name: 'profile_update', methods: ['PUT'])]
     public function updateProfile(Request $request, ManagerRegistry $doctrine, SessionInterface $session): Response
     {
-        $userRepository = $doctrine->getManager()->getRepository(User::class);
-        $user = $userRepository->findOneBy(['id' => $session->get('id')]);
-        $form = $this->createForm(UserRegistrationFormType::class,$user);
+        $userId = $session->get('id');
+        
+        if (!$userId) {
+            return new JsonResponse(['error' => 'Utilisateur non authentifié'], Response::HTTP_UNAUTHORIZED);
+        }
+
+        $userRepository = $doctrine->getRepository(User::class);
+        $user = $userRepository->find($userId);
+
+        if (!$user) {
+            return new JsonResponse(['error' => 'Utilisateur introuvable'], Response::HTTP_NOT_FOUND);
+        }
+
+        $form = $this->createForm(UserRegistrationFormType::class, $user);
         $form->handleRequest($request);
+
         if ($form->isSubmitted() && $form->isValid()) {
             $data = $form->getData();
             $userAddress = $userRepository->findOneBy(['emailAddress' => $data->getEmailAddress()]);
             $userUsername = $userRepository->findOneBy(['username' => $data->getUsername()]);
-            if ($userAddress && $userAddress->getId() != $user->getId()){
-                $message="This email address is already use !";
-            }
-            elseif ($userUsername && $userUsername->getId() != $user->getId()){
-                $message="This username is already use !";
-            }
-            else{
+
+            if ($userAddress && $userAddress->getId() !== $userId) {
+                $message = "Cette adresse e-mail est déjà utilisée !";
+                return new JsonResponse(['message' => $message], Response::HTTP_BAD_REQUEST);
+            } elseif ($userUsername && $userUsername->getId() !== $userId) {
+                $message = "Ce nom d'utilisateur est déjà utilisé !";
+                return new JsonResponse(['message' => $message], Response::HTTP_BAD_REQUEST);
+            } else {
                 $entityManager = $doctrine->getManager();
-                $user->setPassword((MD5($user->getPassword().'15')));
                 $entityManager->persist($user);
                 $entityManager->flush();
-                return $this->redirectToRoute('app_player_profile');
+                return new JsonResponse(['message' => 'Profil mis à jour avec succès'], Response::HTTP_OK);
             }
-            return $this->render('player/updateProfile.html.twig', [
-                'form' => $form->createView(),
-                'message' => $message
-            ]);
         }
-        return $this->render('playe
-        r/updateProfile.html.twig', [
+
+        return $this->render('player/updateProfile.html.twig', [
             'form' => $form->createView(),
         ]);
     }
@@ -117,22 +142,18 @@ class PlayerController extends AbstractController
     #[Route('/profile/delete', name: 'app_player_profile_delete', methods: ['DELETE'])]
     public function deleteProfile(ManagerRegistry $doctrine, SessionInterface $session): Response
     {
-        // Récupérer l'utilisateur à partir de la session
+
         $userId = $session->get('id');
         
         if (!$userId) {
-            // Rediriger ou gérer le cas où l'utilisateur n'est pas connecté
-            // Par exemple, rediriger vers la page de connexion
+   
             return $this->redirectToRoute('app_player_login');
         }
 
         $userRepository = $doctrine->getRepository(User::class);
         $user = $userRepository->find($userId);
 
-        // Vérifier si l'utilisateur existe
         if (!$user) {
-            // Gérer le cas où l'utilisateur n'existe pas
-            // Par exemple, afficher un message d'erreur ou rediriger vers une autre page
             return $this->redirectToRoute('app_player');
         }
 
@@ -140,10 +161,8 @@ class PlayerController extends AbstractController
         $entityManager->remove($user);
         $entityManager->flush();
 
-        // Effacer les données de session de l'utilisateur
         $session->clear();
 
-        // Rediriger vers une page appropriée après la suppression du profil
         return $this->redirectToRoute('app_player');
     }
     

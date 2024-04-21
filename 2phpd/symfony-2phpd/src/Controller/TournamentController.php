@@ -53,32 +53,32 @@ class TournamentController extends AbstractController
         ]);
     }
     
-    #[Route('/tournament/create', name: 'app_tournament_create', methods:['POST'])]
+    #[Route('/tournament/create', name: 'app_tournament_create', methods: ['POST'])]
     public function createTournament(Request $request, ManagerRegistry $doctrine, SessionInterface $session): Response
     {
         $response = $this->userAcces($session);
         if ($response !== null) {
             return $response;
         }
+
         $tournament = new Tournament();
-        $form = $this->createForm(TournamentCreateFormType::class,$tournament);
+        $form = $this->createForm(TournamentCreateFormType::class, $tournament);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
             $userRepository = $doctrine->getManager()->getRepository(User::class);
             $user = $userRepository->findOneBy(['id' => $session->get('id')]);
-
             $entityManager = $doctrine->getManager();
-            $tournament->setStatus("en attente");
+            $tournament->setStatus("Waiting");
             $tournament->setOrganizer($user);
             $tournament->setWinner(null);
             $entityManager->persist($tournament);
             $entityManager->flush();
-            return $this->redirectToRoute('app_tournament');
+            return new JsonResponse(['message' => 'Tournoi créé avec succès'], Response::HTTP_CREATED);
         }
-        return $this->render('tournament/createTournament.html.twig', [
-            'form' => $form->createView(),
-        ]);
+
+        $errors = $this->getFormErrors($form);
+        return new JsonResponse(['errors' => $errors], Response::HTTP_BAD_REQUEST);
     }
     #[Route('/tournament/{id}', name: 'app_tournament_show', methods:['GET'])]
     public function showTournament($id, ManagerRegistry $doctrine, SessionInterface $session): Response
@@ -91,6 +91,41 @@ class TournamentController extends AbstractController
         return $this->render('tournament/showTournament.html.twig', [
             'tournament' => $tournament
         ]);
+    }
+    #[Route('/tournament/{id}/update', name: 'app_tournament_update', methods: ['PUT'])]
+    public function updateTournament($id, Request $request, ManagerRegistry $doctrine, SessionInterface $session): Response
+    {
+        $response = $this->userAcces($session);
+        if ($response !== null) {
+            return $response;
+        }
+
+        $tournament = $doctrine->getRepository(Tournament::class)->find($id);
+
+        if (!$tournament) {
+            return new JsonResponse(['error' => 'Tournoi non trouvé'], Response::HTTP_NOT_FOUND);
+        }
+
+        $form = $this->createForm(TournamentCreateFormType::class, $tournament);
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            $tournament->setName($form->get('nomjeu')->getData());
+            $tournament->setStartDate($form->get('startdate')->getData());
+            $tournament->setEndDate($form->get('enddate')->getData());
+            $tournament->setLocation($form->get('location')->getData());
+            $tournament->setDescription($form->get('description')->getData());
+            $tournament->setMaxParticipants($form->get('maxParticipants')->getData());
+            $tournament->setStatus($form->get('status')->getData());
+            $tournament->setOrganizer($form->get('organizer')->getData());
+            $tournament->setWinner($form->get('winner')->getData());
+            $entityManager = $doctrine->getManager();
+            $entityManager->persist($tournament);
+            $entityManager->flush();
+            return new JsonResponse(['message' => 'Tournoi mis à jour avec succès'], Response::HTTP_OK);
+        }
+        $errors = $this->getFormErrors($form);
+        return new JsonResponse(['errors' => $errors], Response::HTTP_BAD_REQUEST);
     }
     #[Route('/tournament/{id}/delete', name: 'app_tournament_delete', methods:['DELETE'])]
     public function deleteTournament($id, ManagerRegistry $doctrine, SessionInterface $session): Response
@@ -105,36 +140,5 @@ class TournamentController extends AbstractController
         $entityManager->flush();
         return $this->redirectToRoute('app_tournament');
     }
-    #[Route('/tournament/{id}/update', name: 'app_tournament_update', methods:['PUT'])]
-    public function updateTournament($id, Request $request, ManagerRegistry $doctrine, SessionInterface $session): Response
-    {
-        $response = $this->userAcces($session);
-        if ($response !== null) {
-            return $response;
-        }
-        $tournament = $doctrine->getRepository(Tournament::class)->find($id);
-        $form = $this->createForm(TournamentCreateFormType::class, $tournament);
-        $form->handleRequest($request);
-        if ($form->isSubmitted() && $form->isValid()) {
-            // Update tournament data
-            $tournament->setName($form->get('nomjeu')->getData());
-            $tournament->setStartDate($form->get('startdate')->getData());
-            $tournament->setEndDate($form->get('enddate')->getData());
-            $tournament->setLocation($form->get('location')->getData());
-            $tournament->setDescription($form->get('description')->getData());
-            $tournament->setMaxParticipants($form->get('maxParticipants')->getData());
-            $tournament->setStatus($form->get('status')->getData());
-            $tournament->setOrganizer($form->get('organizer')->getData());
-            $tournament->setWinner($form->get('winner')->getData());
-            
-
-            $entityManager = $doctrine->getManager();
-            $entityManager->persist($tournament);
-            $entityManager->flush();
-            return $this->redirectToRoute('app_tournament_show', ['id' => $tournament->getId()]);
-        }
     
-        return $this->render('tournament/updateTournament.html.twig', [
-            'form' => $form->createView(),
-        ]);}
 }

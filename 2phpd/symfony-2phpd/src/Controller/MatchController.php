@@ -16,6 +16,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\HttpFoundation\JsonResponse;
 
 class MatchController extends AbstractController
 {
@@ -151,22 +152,35 @@ class MatchController extends AbstractController
         ]);
     }
     #[Route('/match/create/{id}', name: 'app_match_create', methods:['POST'])]
-    public function createMatch($id, ManagerRegistry $doctrine, SessionInterface $session): Response
+    public function createMatch($id, Request $request, ManagerRegistry $doctrine, SessionInterface $session): Response
     {
         $response = $this->userAcces($session);
         if ($response !== null) {
             return $response;
         }
+
         $entityManager = $doctrine->getManager();
-        $user = $doctrine->getManager()->getRepository(User::class)->findOneBy(['id' => $session->get('id')]);
-        $tournament = $doctrine->getManager()->getRepository(Tournament::class)->findOneBy(['id' => $id]);
-        $game = $doctrine->getManager()->getRepository(Game::class)->findOneBy(['tournament' => $tournament, 'player2' => null]);
+        $userId = $session->get('id');
+        $data = json_decode($request->getContent(), true);
+
+        if (!isset($data['playerId'])) {
+            return new JsonResponse(['error' => 'L\'identifiant du joueur est manquant dans le corps de la requête'], Response::HTTP_BAD_REQUEST);
+        }
+
+        $playerId = $data['playerId'];
+        $user = $entityManager->getRepository(User::class)->find($userId);
+        $tournament = $entityManager->getRepository(Tournament::class)->find($id);
+
+        if (!$user || !$tournament) {
+            return new JsonResponse(['error' => 'Utilisateur ou tournoi invalide'], Response::HTTP_BAD_REQUEST);
+        }
+
+        $game = $entityManager->getRepository(Game::class)->findOneBy(['tournament' => $tournament, 'player2' => null]);
+
         if ($game) {
             $game->setPlayer2($user);
-            $entityManager->persist($game);
-            $entityManager->flush();
         } else {
-            $game = new game();
+            $game = new Game();
             $game->setPlayer1($user);
             $game->setStatus("non complet");
             $game->setPlayer2(null);
@@ -174,9 +188,11 @@ class MatchController extends AbstractController
             $game->setScorePlayer1(0);
             $game->setScorePlayer2(0);
             $entityManager->persist($game);
-            $entityManager->flush();
         }
-        return $this->redirectToRoute("app_match", ['id' => $id]);
+
+        $entityManager->flush();
+
+        return new JsonResponse(['message' => 'Match créé avec succès'], Response::HTTP_OK);
     }
     #[Route('/tournaments/{idTournament}/games/{idGame}', name: 'game_details', methods:['GET'])]
     public function getGameDetails($idTournament, $idGame, ManagerRegistry $doctrine): Response
@@ -185,17 +201,14 @@ class MatchController extends AbstractController
         if (!$game) {
             return new Response('Game not found', Response::HTTP_NOT_FOUND);
         }
-        // Fetch other necessary data for the game details
         $player1 = $game->getPlayer1();
         $player2 = $game->getPlayer2();
         $tournament = $game->getTournament();
-        // Construct the response data
         $responseData = [
             'id' => $game->getId(),
             'player1' => $player1 ? $player1->getId() : null,
             'player2' => $player2 ? $player2->getId() : null,
             'tournament' => $tournament ? $tournament->getId() : null,
-            // Add other necessary game details here
         ];
         return new Response(json_encode($responseData), Response::HTTP_OK);
     }
@@ -206,27 +219,36 @@ class MatchController extends AbstractController
         if ($response !== null) {
             return $response;
         }
+        
         $entityManager = $doctrine->getManager();
         $game = $doctrine->getManager()->getRepository(Game::class)->findOneBy(['id' => $idGame, 'tournament' => $idTournament]);
+        
         if (!$game) {
-            return new Response('Game not found', Response::HTTP_NOT_FOUND);
+            return new JsonResponse(['error' => 'Game not found'], Response::HTTP_NOT_FOUND);
         }
+        
         $user = $doctrine->getManager()->getRepository(User::class)->findOneBy(['id' => $session->get('id')]);
+        
         if ($user !== $game->getPlayer1() && !$user->isAdmin()) {
-            return new Response('Unauthorized', Response::HTTP_UNAUTHORIZED);
+            return new JsonResponse(['error' => 'Unauthorized'], Response::HTTP_UNAUTHORIZED);
         }
+        
         $data = json_decode($request->getContent(), true);
         $scorePlayer1 = $data['scorePlayer1'] ?? null;
         $scorePlayer2 = $data['scorePlayer2'] ?? null;
+        
         if ($scorePlayer1 !== null) {
             $game->setScorePlayer1($scorePlayer1);
         }
+        
         if ($scorePlayer2 !== null) {
             $game->setScorePlayer2($scorePlayer2);
         }
+        
         $entityManager->persist($game);
         $entityManager->flush();
-        return new Response('Game updated successfully', Response::HTTP_OK);
+        
+        return new JsonResponse(['message' => 'Game updated successfully'], Response::HTTP_OK);
     }
     #[Route('/match/delete/{id}', name: 'app_match_delete', methods:['DELETE'])]
     public function deleteMatch($id, ManagerRegistry $doctrine, SessionInterface $session): Response
