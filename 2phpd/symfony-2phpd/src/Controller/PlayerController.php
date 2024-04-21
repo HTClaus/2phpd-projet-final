@@ -88,12 +88,14 @@ class PlayerController extends AbstractController
     #[Route('/profile', name: 'app_player_profile', methods:['GET'])]
     public function profile(SessionInterface $session): Response
     {
-        return $this->render('player/profile.html.twig', [
+        $profileData = [
             'id' => $session->get('id'),
             'username' => $session->get('username'),
             'emailaddress' => $session->get('emailaddress'),
             'status' => $session->get('status'),
-        ]);
+        ];
+
+        return new JsonResponse($profileData);
     }
     
     #[Route('/profile/update', name: 'profile_update', methods: ['PUT'])]
